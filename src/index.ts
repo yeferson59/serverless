@@ -20,6 +20,8 @@ const actividades = [
 const GET = 'GET';
 const POST = 'POST';
 
+const ROUTES = ['/actividades', '/estadisticas'];
+
 function responder(datos: any, estado = 200) {
 	return Response.json(datos, { status: estado, headers: { 'Cache-Control': 'no-store' } });
 }
@@ -30,39 +32,55 @@ export default {
 		const ruta = url.pathname.replace(/\/+$/, '') || '/';
 		const metodo = request.method;
 
-		if (metodo === GET && ruta === '/actividades') {
+		if (metodo === GET && ruta == '/') {
+			return responder({ servicio: 'API Academica Serverless', universidad: 'Universidad de Pamplona', estado: 'activo' });
+		}
+
+		if (metodo === GET && ruta.startsWith(ROUTES[0])) {
 			const query = url.searchParams.get('creditos');
 
 			if (query) {
 				return responder(actividades.filter((a) => a.creditos === Number(query)));
 			}
 
+			const pathname = url.pathname.split('/')[2];
+
+			const id = Number(pathname);
+
+			if (pathname && pathname.trim() !== '' && id) {
+				return responder(actividades.filter((a) => a.id === id));
+			}
+
 			return responder(actividades);
 		}
 
-		if (metodo === POST && ruta === '/actividades') {
-			const data = (await request.json()) as {
+		if (metodo === POST && ruta === ROUTES[0]) {
+			const req = await request.json();
+
+			if (typeof req !== 'object') {
+				return responder(null, 400);
+			}
+
+			const data = req as {
 				nombre: string | null;
 				creditos: string | null;
 			};
 
-			if (typeof data.nombre !== 'string') {
-				return responder({}, 400);
-			}
+			const nombre = data.nombre?.trim();
 
-			if (data.nombre.length > 100) {
-				return responder({}, 400);
+			if (!nombre || typeof data.nombre !== 'string' || nombre === '' || nombre.length > 100) {
+				return responder(null, 400);
 			}
 
 			const creditos = Number(data.creditos);
 
-			if (typeof creditos !== 'number') {
-				return responder({}, 400);
+			if (!creditos || typeof creditos !== 'number' || creditos <= 0) {
+				return responder(null, 400);
 			}
 
 			const asignatura = {
 				id: actividades.length + 1,
-				nombre: data.nombre,
+				nombre: nombre.trim(),
 				creditos: creditos,
 			};
 
@@ -71,10 +89,10 @@ export default {
 			return responder(actividades);
 		}
 
-		if (metodo === GET && ruta === '/estadisticas') {
+		if (metodo === GET && ruta === ROUTES[1]) {
 			return responder({ total: actividades.length, totalCreditos: actividades.reduce((total, num) => total + num.creditos, 0) });
 		}
 
-		return responder({ servicio: 'API Academica Serverless', universidad: 'Universidad de Pamplona', estado: 'activo' });
+		return responder(null, 404);
 	},
 } satisfies ExportedHandler<Env>;
