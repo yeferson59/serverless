@@ -74,12 +74,27 @@ describe('RF-03 · GET /actividades/:id', () => {
 		const res = await llamar('/actividades/999');
 
 		expect(res.status).toBe(404);
+		expect(await res.json()).toEqual({ error: 'No existe una actividad con id 999' });
+	});
+
+	it('responde HTTP 400 con un mensaje si el id no es numérico', async () => {
+		const res = await llamar('/actividades/abc');
+
+		expect(res.status).toBe(400);
+		expect(await res.json()).toEqual({ error: 'El id de la actividad debe ser un número válido' });
 	});
 });
 
 describe('RF-05 · rutas inexistentes', () => {
 	it('CP-08 responde HTTP 404 en GET /inexistente', async () => {
 		const res = await llamar('/inexistente');
+
+		expect(res.status).toBe(404);
+		expect(await res.json()).toEqual({ error: 'Ruta no encontrada' });
+	});
+
+	it('responde HTTP 404 en GET /actividadesxyz (no es /actividades)', async () => {
+		const res = await llamar('/actividadesxyz');
 
 		expect(res.status).toBe(404);
 	});
@@ -145,6 +160,7 @@ describe('RF-04 · POST /actividades', () => {
 		const res = await post({ creditos: 3 });
 
 		expect(res.status).toBe(400);
+		expect(await res.json()).toHaveProperty('error');
 	});
 
 	it('responde HTTP 400 si el nombre está vacío o solo tiene espacios', async () => {
@@ -180,6 +196,17 @@ describe('RF-04 · POST /actividades', () => {
 		const res = await post(null);
 
 		expect(res.status).toBe(400);
+	});
+
+	it('responde HTTP 400 si el cuerpo no es un JSON válido', async () => {
+		const res = await llamar('/actividades', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: '{ nombre: "sin comillas", ',
+		});
+
+		expect(res.status).toBe(400);
+		expect(await res.json()).toEqual({ error: 'El cuerpo de la petición debe ser un JSON válido' });
 	});
 
 	it('no guarda las actividades rechazadas', async () => {

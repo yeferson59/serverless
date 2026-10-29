@@ -36,47 +36,53 @@ export default {
 			return responder({ servicio: 'API Academica Serverless', universidad: 'Universidad de Pamplona', estado: 'activo' });
 		}
 
-		if (metodo === GET && ruta.startsWith(ROUTES[0])) {
+		if (metodo === GET && (ruta === ROUTES[0] || ruta.startsWith(`${ROUTES[0]}/`))) {
 			const query = url.searchParams.get('creditos');
 
 			if (query) {
 				return responder(actividades.filter((a) => a.creditos === Number(query)));
 			}
 
-			if (url.pathname.split('/').length < 3) {
+			if (ruta.split('/').length < 3) {
 				return responder(actividades);
 			}
 
-			const pathname = url.pathname.split('/')[2].trim();
+			const pathname = ruta.split('/')[2].trim();
 
 			if (pathname === '') {
-				return responder(null, 400);
+				return responder({ error: 'El id de la actividad es obligatorio' }, 400);
 			}
 
 			const id = Number(pathname);
 
 			if (!id) {
-				return responder(null, 400);
+				return responder({ error: 'El id de la actividad debe ser un número válido' }, 400);
 			}
 
 			const actividad = actividades.find((a) => a.id === id);
 
 			if (!actividad) {
-				return responder(null, 404);
+				return responder({ error: `No existe una actividad con id ${id}` }, 404);
 			}
 
 			return responder(actividad);
 		}
 
 		if (metodo === POST && ruta === ROUTES[0]) {
-			const req = await request.json();
+			let req: unknown;
+
+			try {
+				req = await request.json();
+			} catch {
+				return responder({ error: 'El cuerpo de la petición debe ser un JSON válido' }, 400);
+			}
 
 			if (typeof req !== 'object') {
-				return responder(null, 400);
+				return responder({ error: 'El cuerpo de la petición debe ser un objeto' }, 400);
 			}
 
 			if (!req) {
-				return responder(null, 400);
+				return responder({ error: 'El cuerpo de la petición no puede ser null' }, 400);
 			}
 
 			const data = req as {
@@ -87,13 +93,13 @@ export default {
 			const nombre = data.nombre?.trim();
 
 			if (!nombre || typeof data.nombre !== 'string' || nombre === '' || nombre.length > 100) {
-				return responder(null, 400);
+				return responder({ error: 'El nombre es obligatorio y debe tener máximo 100 caracteres' }, 400);
 			}
 
 			const creditos = Number(data.creditos);
 
 			if (!creditos || typeof creditos !== 'number' || creditos <= 0) {
-				return responder(null, 400);
+				return responder({ error: 'Los créditos deben ser un número mayor que 0' }, 400);
 			}
 
 			const asignatura = {
@@ -111,6 +117,6 @@ export default {
 			return responder({ total: actividades.length, totalCreditos: actividades.reduce((total, num) => total + num.creditos, 0) });
 		}
 
-		return responder(null, 404);
+		return responder({ error: 'Ruta no encontrada' }, 404);
 	},
 } satisfies ExportedHandler<Env>;
