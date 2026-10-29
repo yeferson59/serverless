@@ -48,7 +48,13 @@ export default {
 			const id = Number(pathname);
 
 			if (pathname && pathname.trim() !== '' && id) {
-				return responder(actividades.filter((a) => a.id === id));
+				const actividad = actividades.find((a) => a.id === id);
+
+				if (!actividad) {
+					return responder(null, 404);
+				}
+
+				return responder(actividad);
 			}
 
 			return responder(actividades);
@@ -58,6 +64,10 @@ export default {
 			const req = await request.json();
 
 			if (typeof req !== 'object') {
+				return responder(null, 400);
+			}
+
+			if (!req) {
 				return responder(null, 400);
 			}
 
