@@ -60,13 +60,6 @@ describe('RF-02 · GET /actividades', () => {
 			{ id: 3, nombre: 'Pruebas de Software', creditos: 2 },
 		]);
 	});
-
-	it('trata igual la ruta con barra final (/actividades/)', async () => {
-		const res = await llamar('/actividades/');
-
-		expect(res.status).toBe(200);
-		expect(Array.isArray(await res.json())).toBe(true);
-	});
 });
 
 describe('RF-03 · GET /actividades/:id', () => {

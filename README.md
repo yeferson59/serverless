@@ -1,20 +1,20 @@
 # API Académica Serverless
 
-API REST para consultar y registrar actividades académicas, construida con **Cloudflare Workers** (plan gratuito) para el taller práctico de *Serverless Computing* de Ingeniería del Software III, Universidad de Pamplona.
+API REST para consultar y registrar actividades académicas, construida con **Cloudflare Workers** (plan gratuito) para el taller práctico de _Serverless Computing_ de Ingeniería del Software III, Universidad de Pamplona.
 
 **URL pública:** https://taller-serverless.yefersontoloza59.workers.dev
 
 ## Endpoints
 
-| Método | Ruta | Descripción | Respuestas |
-| --- | --- | --- | --- |
-| GET | `/` | Estado del servicio | 200 |
-| GET | `/actividades` | Lista de actividades | 200 |
-| GET | `/actividades?creditos=3` | Actividades filtradas por créditos | 200 |
-| GET | `/actividades/:id` | Una actividad por ID | 200, 404 |
-| POST | `/actividades` | Valida y recibe una actividad | 200, 400 |
-| GET | `/estadisticas` | Total de actividades y suma de créditos | 200 |
-| * | Cualquier otra ruta | Recurso no encontrado | 404 |
+| Método | Ruta                      | Descripción                             | Respuestas |
+| ------ | ------------------------- | --------------------------------------- | ---------- |
+| GET    | `/`                       | Estado del servicio                     | 200        |
+| GET    | `/actividades`            | Lista de actividades                    | 200        |
+| GET    | `/actividades?creditos=3` | Actividades filtradas por créditos      | 200        |
+| GET    | `/actividades/:id`        | Una actividad por ID                    | 200, 404   |
+| POST   | `/actividades`            | Valida y recibe una actividad           | 200, 400   |
+| GET    | `/estadisticas`           | Total de actividades y suma de créditos | 200        |
+| *      | Cualquier otra ruta       | Recurso no encontrado                   | 404        |
 
 Reglas del `POST /actividades` (cuerpo JSON `{ "nombre": "...", "creditos": 3 }`):
 

@@ -43,21 +43,29 @@ export default {
 				return responder(actividades.filter((a) => a.creditos === Number(query)));
 			}
 
-			const pathname = url.pathname.split('/')[2];
+			if (url.pathname.split('/').length < 3) {
+				return responder(actividades);
+			}
+
+			const pathname = url.pathname.split('/')[2].trim();
+
+			if (pathname === '') {
+				return responder(null, 400);
+			}
 
 			const id = Number(pathname);
 
-			if (pathname && pathname.trim() !== '' && id) {
-				const actividad = actividades.find((a) => a.id === id);
-
-				if (!actividad) {
-					return responder(null, 404);
-				}
-
-				return responder(actividad);
+			if (!id) {
+				return responder(null, 400);
 			}
 
-			return responder(actividades);
+			const actividad = actividades.find((a) => a.id === id);
+
+			if (!actividad) {
+				return responder(null, 404);
+			}
+
+			return responder(actividad);
 		}
 
 		if (metodo === POST && ruta === ROUTES[0]) {
